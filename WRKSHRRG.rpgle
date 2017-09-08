@@ -1,8 +1,3 @@
-     *  WRKSHRRG                      :
-     *  ######........................: Mit Netzfreigaben arbeiten
-     *        RG......................: RPG IV
-     *  VERSION.......................: V1R1M0
-
      *- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
      *- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
      *- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -13,24 +8,16 @@
 
      *  00000000                        BRC      07.09.2017
 
-
-     *#########################################################################
-     *- Kopfdefinitionen
-     *#########################################################################
-
      H MAIN( Main ) ALWNULL( *USRCTL ) AUT( *EXCLUDE )
      H DATFMT( *ISO- ) TIMFMT( *ISO. ) DECEDIT( '0,' )
-     H DFTACTGRP( *NO ) ACTGRP( *CALLER ) DEBUG( *YES ) USRPRF( *OWNER )
+     H DFTACTGRP( *NO ) ACTGRP( *NEW ) DEBUG( *YES ) USRPRF( *OWNER )
 
 
      *#########################################################################
-     *- Definitionen
+     *- Definitions
      *#########################################################################
 
-     * Datentypen -------------------------------------------------------------
-      /INCLUDE *LIBL/QRPGLECPY,INLR
-
-     * Programm Prototype -----------------------------------------------------
+     * Program prototype ------------------------------------------------------
      D Main            PR                  EXTPGM( 'WRKSHRRG' )
      D  paName                       12A   CONST
      D  paPath                     1024A   CONST OPTIONS( *NOPASS:*VARSIZE )
@@ -38,17 +25,14 @@
      D  paPermission                  1A   CONST OPTIONS( *NOPASS )
      D  paMaxUser                     4A   CONST OPTIONS( *NOPASS )
 
-     * Importierte Prototypen -------------------------------------------------
-      /INCLUDE *LIBL/QRPGLECPY,SYSTEM
-
-     * Globale Konstanten -----------------------------------------------------
+     * Global constants -------------------------------------------------------
       /INCLUDE *LIBL/QRPGLECPY,CONSTANTS
      D CREATE_SHARE    C                   'C'
      D REMOVE_SHARE    C                   'R'
 
 
      *#########################################################################
-     *- MAIN-Prozedur fuer das Programm
+     *- MAIN-Procedure
      *#########################################################################
     P Main            B
      D Main            PI
@@ -66,11 +50,11 @@
      D  paShareText                  50A    CONST                                Description
      D  piPermission                 10I 0  CONST                                1=RO, 2=RW
      D  piMaxUser                    10I 0  CONST                                -1=Nomax, >0
-     D  pdsErrorDS                          LIKE( dsErrorDS )                    Error
+     D  pdsErrorDS                          LIKEDS( dsErrorDS )                  Error
 
      D EC#RmvDirShare  PR                  EXTPGM( 'QZLSRMS' )                  Remove share
      D  paShareName                  12A    CONST                                Name
-     D  pdsErrorDS                          LIKE( dsErrorDS )                    Error
+     D  pdsErrorDS                          LIKEDS( dsErrorDS )                  Error
 
      D aCallType       S              1A   INZ
      D iPermission     S             10I 0 INZ
@@ -85,27 +69,25 @@
      d  aMsgData                   1024A    INZ
      *-------------------------------------------------------------------------
 
-      If ( %Parms()=1 );
-         aCallType=REMOVE_SHARE;
-         nSuccess=TRUE;
-      ElseIf ( %Parms()=5 );
-         aCallType=CREATE_SHARE;
-         iPermission=%Int(paPermission);
-         iMaxUser=%Int(paMaxUser);
-         nSuccess=TRUE;
+      If ( %Parms() = 1 );
+         aCallType = REMOVE_SHARE;
+         nSuccess = TRUE;
+      ElseIf ( %Parms() = 5 );
+         aCallType = CREATE_SHARE;
+         iPermission = %Int(paPermission);
+         iMaxUser = %Int(paMaxUser);
+         nSuccess = TRUE;
       Else;
-         nSuccess=FALSE;
+         nSuccess = FALSE;
       EndIf;
 
-      If nSuccess And ( aCallType=CREATE_SHARE );
+      If nSuccess And ( aCallType = CREATE_SHARE );
          EC#AddDirShare(paName :paPath :%Len(%Trim(paPath)) :0 :paText
                         :iPermission  :iMaxUser :dsErrorDS);
-      ElseIf nSuccess And ( aCallType=REMOVE_SHARE );
+      ElseIf nSuccess And ( aCallType = REMOVE_SHARE );
          EC#RmvDirShare(paName :dsErrorDS);
       EndIf;
 
-      // Programm beenden
-       ExitProgram=TRUE;
        Return;
 
     P                 E
